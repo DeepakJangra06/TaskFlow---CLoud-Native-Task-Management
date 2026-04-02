@@ -1,25 +1,28 @@
-# Stage 1: Build Stage
-FROM node:18-alpine AS build
+# Dockerfile
 
-WORKDIR /app
+# Use a Node.js base image
+FROM node:14
+
+# Set the working directory
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
 # Install dependencies
-COPY package*.json ./
 RUN npm install
 
-# Copy source and build
+# Copy the rest of the application
 COPY . .
+
+# Change permissions before building
+RUN chmod -R 755 ./node_modules
+
+# Build the application
 RUN npm run build
 
-# Stage 2: Serve with Nginx
-FROM nginx:alpine
+# Expose the port
+EXPOSE 8080
 
-# Copy built files from previous stage
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# Start the application
+CMD [ "npm", "start" ]
