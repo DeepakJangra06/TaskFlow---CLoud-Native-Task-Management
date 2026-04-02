@@ -20,7 +20,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 
 // Health check endpoints
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', uptime: process.uptime() });
 });
 
@@ -46,12 +46,11 @@ app.use((error, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-  console.error('Error: MONGODB_URI is not defined in environment variables.');
-  process.exit(1);
-}
-
 if (process.env.NODE_ENV !== 'test') {
+  if (!MONGODB_URI) {
+    console.error('Error: MONGODB_URI is not defined in environment variables.');
+    process.exit(1);
+  }
   const server = mongoose
     .connect(MONGODB_URI)
     .then(() => {
