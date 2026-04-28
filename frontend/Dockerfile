@@ -1,10 +1,7 @@
-# Dockerfile
+# Stage 1: Build the React application
+FROM node:20-alpine AS build
 
-# Use a Node.js base image
-FROM node:14
-
-# Set the working directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
@@ -15,14 +12,20 @@ RUN npm install
 # Copy the rest of the application
 COPY . .
 
-# Change permissions before building
-RUN chmod -R 755 ./node_modules
-
 # Build the application
 RUN npm run build
 
-# Expose the port
-EXPOSE 8080
+# Stage 2: Serve the application using Nginx
+FROM nginx:stable-alpine
 
-# Start the application
-CMD [ "npm", "start" ]
+# Copy the build artifacts from the build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy custom Nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]

@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const isAuth = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -46,6 +47,19 @@ router.post('/login', async (req, res, next) => {
     );
 
     res.status(200).json({ token: token, userId: user._id.toString(), username: user.username });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Get User Profile
+router.get('/profile', isAuth, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+    res.status(200).json({ user });
   } catch (err) {
     next(err);
   }

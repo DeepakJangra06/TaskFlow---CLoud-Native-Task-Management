@@ -88,6 +88,98 @@ const Register = () => {
     </div>
   );
 };
+// --- Layout Components ---
+const Sidebar = ({ active, handleLogout }) => {
+  const navigate = useNavigate();
+  return (
+    <aside className="sidebar">
+      <div className="brand" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
+        <div className="logo-icon"><Layout size={24} /></div>
+        <span>TaskFlow</span>
+      </div>
+      <nav>
+        <div className={`nav-item ${active === 'dashboard' ? 'active' : ''}`} onClick={() => navigate('/dashboard')}>
+          <motion.div whileHover={{ scale: 1.05 }} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Layout size={20} /> <span>Dashboard</span>
+          </motion.div>
+        </div>
+        <div className={`nav-item ${active === 'profile' ? 'active' : ''}`} onClick={() => navigate('/profile')}>
+          <User size={20} /> <span>Profile</span>
+        </div>
+        <div className="nav-item logout" onClick={handleLogout}><LogOut size={20} /> <span>Logout</span></div>
+      </nav>
+    </aside>
+  );
+};
+
+// --- Profile Component ---
+const Profile = ({ handleLogout }) => {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('/api/auth/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setProfile(res.data.user);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="dashboard-layout">
+      <Sidebar active="profile" handleLogout={handleLogout} />
+      <main className="dashboard-content">
+        <header>
+          <div className="welcome">
+            <h1>User Profile</h1>
+            <p>Your account information</p>
+          </div>
+        </header>
+
+        <section className="profile-section">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card profile-card"
+          >
+            {loading ? (
+              <p>Loading profile...</p>
+            ) : profile ? (
+              <div className="profile-details">
+                <div className="profile-header-large">
+                   <div className="profile-avatar-large">
+                      <User size={48} />
+                   </div>
+                   <h2>{profile.username}</h2>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Email Address</span>
+                  <span className="value">{profile.email}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Member Since</span>
+                  <span className="value">{new Date(profile.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ) : (
+              <p>Error loading profile.</p>
+            )}
+          </motion.div>
+        </section>
+      </main>
+    </div>
+  );
+};
 
 // --- Dashboard Sub-Components ---
 const Dashboard = ({ handleLogout }) => {
@@ -169,18 +261,7 @@ const Dashboard = ({ handleLogout }) => {
 
   return (
     <div className="dashboard-layout">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="logo-icon"><Layout size={24} /></div>
-          <span>TaskFlow</span>
-        </div>
-        <nav>
-          <div className="nav-item active"><motion.div whileHover={{ scale: 1.05 }}><Layout size={20} /> Dashboard</motion.div></div>
-          <div className="nav-item"><User size={20} /> Profile</div>
-          <div className="nav-item logout" onClick={handleLogout}><LogOut size={20} /> Logout</div>
-        </nav>
-      </aside>
-
+      <Sidebar active="dashboard" handleLogout={handleLogout} />
       <main className="dashboard-content">
         <header>
           <div className="welcome">
@@ -306,6 +387,7 @@ function App() {
           <Route path="/login" element={!isAuth ? <Login setAuth={setIsAuth} /> : <Navigate to="/dashboard" />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={isAuth ? <Dashboard handleLogout={handleLogout} /> : <Navigate to="/login" />} />
+          <Route path="/profile" element={isAuth ? <Profile handleLogout={handleLogout} /> : <Navigate to="/login" />} />
           <Route path="/" element={<Navigate to={isAuth ? "/dashboard" : "/login"} />} />
        </Routes>
     </div>
