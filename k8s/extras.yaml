@@ -4,8 +4,8 @@ metadata:
   name: taskflow-secrets
 type: Opaque
 stringData:
-  mongodb-uri: "REPLACE_WITH_YOUR_MONGODB_URI"
-  jwt-secret: "REPLACE_WITH_YOUR_JWT_SECRET"
+  mongodb-uri: "mongodb://mongodb:27017/taskflow"
+  jwt-secret: "super_secret_taskflow_key_12345"
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler

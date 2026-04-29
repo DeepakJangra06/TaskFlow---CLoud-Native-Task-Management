@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
       - name: taskflow-frontend
-        image: your-docker-hub-username/taskflow-frontend:latest
+        image: cloudnativeproject-frontend:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
         resources:

@@ -14,9 +14,11 @@ spec:
       labels:
         app: taskflow-backend
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: taskflow-backend
-        image: your-docker-hub-username/taskflow-backend:latest
+        image: cloudnativeproject-backend:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000
         env:
@@ -49,12 +51,11 @@ spec:
             port: 5000
           initialDelaySeconds: 5
           periodSeconds: 10
-        terminationGracePeriodSeconds: 30
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: taskflow-backend-service
+  name: backend
 spec:
   selector:
     app: taskflow-backend
