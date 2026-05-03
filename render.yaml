@@ -1,0 +1,39 @@
+services:
+  # 1. MongoDB Service (Private)
+  - type: pserv
+    name: mongodb
+    runtime: docker
+    image: mongo:latest
+    disk:
+      name: mongo-data
+      mountPath: /data/db
+      sizeGB: 1
+
+  # 2. Backend Service (Web Service)
+  - type: web
+    name: taskflow-backend
+    runtime: docker
+    dockerContext: ./backend
+    dockerFilePath: ./backend/Dockerfile
+    plan: free
+    envVars:
+      - key: MONGODB_URI
+        value: mongodb://mongodb:27017/taskflow
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 5000
+
+  # 3. Frontend Service (Web Service)
+  - type: web
+    name: taskflow-frontend
+    runtime: docker
+    dockerContext: ./frontend
+    dockerFilePath: ./frontend/Dockerfile
+    plan: free
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          name: taskflow-backend
+          type: web
+          property: host
